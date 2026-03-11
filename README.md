@@ -1,80 +1,226 @@
-# OptionSim — Monte Carlo Options Pricing Engine
+# 📈 OptionSim Dashboard
 
-A Python-based options pricing engine that uses Monte Carlo simulation 
-to price equity options and compute risk metrics (Greeks).
+> **An interactive Monte Carlo options pricing and risk analysis platform — built with Python, Streamlit, and Plotly.**
 
-## What it does
-- Fetches live stock data for any ticker (NVDA, AAPL, TSLA, MSFT, etc.)
-- Calculates historical volatility from 12 months of real market data
-- Prices Call and Put options using Monte Carlo simulation (10,000 paths)
-- Validates results against Black-Scholes analytical model
-- Computes Delta, Theta, Vega with plain-English interpretation
-- Generates a structured Risk & Hedge recommendation report
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
+![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=flat&logo=plotly&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-013243?style=flat&logo=numpy&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 
-## Tech Stack
-- Python 3.x
-- NumPy — simulation and math
-- SciPy — normal distribution (Black-Scholes)
-- yfinance — live market data
+---
 
-## Project Structure
+## 🧩 Problem Statement
+
+Options are mispriced every day in the market — but retail investors and junior analysts have no accessible tool to independently verify fair value, understand their risk exposure, or stress-test their positions in real time.
+
+Institutional desks have Bloomberg terminals and proprietary pricing tools costing millions. Everyone else has spreadsheets and gut feel.
+
+**OptionSim Dashboard solves this.**
+
+---
+
+## 💡 Solution
+
+A two-part system built from scratch:
+
+| Part | Description |
+|------|-------------|
+| **OptionSim Engine** | Python-based Monte Carlo + Black-Scholes pricing engine |
+| **OptionSim Dashboard** | Interactive Streamlit web dashboard wrapping the engine |
+
+Together they give any user — retail trader, analyst, or student — a professional-grade options pricing and risk platform in their browser.
+
+---
+
+## ✨ Features
+
+### 📊 Market Snapshot
+- Live stock price fetched via Yahoo Finance
+- Automatic strike price calculation (customizable % OTM/ITM)
+- Historical annualized volatility (252-day)
+- Time to expiry in days and years
+
+### 💰 Pricing Engine
+- **Monte Carlo simulation** — up to 50,000 simulated price paths using Geometric Brownian Motion
+- **Black-Scholes pricing** — analytical benchmark
+- **Model convergence** — measures how closely MC tracks BS (typically 97–99%)
+
+### 📉 Simulated Price Paths
+- 200 of 10,000 GBM paths plotted interactively
+- Mean path highlighted
+- Strike and spot price reference lines
+
+### 💸 Payoff Diagram
+- Profit/Loss at expiry for every possible stock price
+- Profit zone (green) and loss zone (red) filled
+- Breakeven point clearly visible
+
+### 😊 Volatility Smile
+- Implied volatility plotted across all strikes
+- ATM reference line
+- Your specific strike highlighted on the curve
+
+### 🎯 Greeks
+- **Delta (Δ)** — directional sensitivity per $1 stock move
+- **Theta (Θ)** — daily time decay cost
+- **Vega (ν)** — sensitivity to 1% volatility change
+
+### ⚠️ Risk Verdict
+- Model reliability verdict (converge / diverge)
+- Delta hedge recommendation (shares to short per 100 contracts)
+
+### 📊 VaR Backtest — Basel III
+- 252 trading days of real returns vs rolling 95% VaR threshold
+- Violations marked with ❌ on chart
+- **Basel Traffic Light verdict** — Green / Yellow / Red zone
+- Violation rate vs expected 5%
+
+---
+
+## 🏦 Real World Use Cases
+
+### Retail Trader
+> Ravi wants to buy NVDA calls before earnings. He sets 14 days to expiry, 5% OTM. The dashboard shows fair value $4.20, Delta 0.31 — he needs a $13 move to break even, and Theta is costing $0.18 per day. He decides to pass. The model saved him money.
+
+### Junior Analyst
+> A hedge fund analyst needs to sanity-check an options price before a trade goes through. OptionSim returns MC price, BS price, and 99% convergence in under 3 seconds — confirming the desk's model is correct.
+
+### Risk Manager
+> A risk manager checks the VaR backtest and sees 14 violations in 192 days — RED zone (7.3% vs expected 5%). She flags the 60-day rolling window as too slow for NVDA's current volatility regime and switches to EWMA. That's exactly what Basel III compliance requires.
+
+---
+
+## 🛠️ Tech Stack
+
+| Tool | Purpose |
+|------|---------|
+| Python 3.10+ | Core language |
+| NumPy | Monte Carlo simulation, matrix operations |
+| SciPy | Black-Scholes normal distribution |
+| yfinance | Live market data + historical prices |
+| Streamlit | Web dashboard framework |
+| Plotly | Interactive charts |
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/MaverickTushar007/OptionSim-Dashboard.git
+cd OptionSim-Dashboard
 ```
-OptionSim/
+
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+Or with conda:
+```bash
+conda install -c conda-forge streamlit plotly yfinance numpy scipy
+```
+
+### 3. Run the dashboard
+```bash
+streamlit run app.py
+```
+
+The dashboard opens automatically at `http://localhost:8501`
+
+---
+
+## 📁 Project Structure
+
+```
+OptionSim-Dashboard/
+│
+├── app.py                  ← Streamlit dashboard (main file)
+├── requirements.txt        ← Dependencies
+├── README.md
+│
 ├── data/
-│   └── fetcher.py        # Live stock data via yfinance
-├── engine/
-│   ├── volatility.py     # Historical volatility (σ)
-│   ├── black_scholes.py  # BS analytical pricer
-│   ├── monte_carlo.py    # MC simulation engine
-│   └── greeks.py         # Delta, Theta, Vega
-├── report/
-│   └── summary.py        # Risk report generator
-└── main.py               # Entry point
+│   ├── __init__.py
+│   └── fetcher.py          ← Live price + historical data via yfinance
+│
+└── engine/
+    ├── __init__.py
+    ├── volatility.py       ← Annualized historical volatility
+    ├── black_scholes.py    ← Analytical BS pricing
+    ├── monte_carlo.py      ← GBM Monte Carlo simulation
+    └── greeks.py           ← Delta, Theta, Vega (numerical bumping)
 ```
 
-## How to Run
+---
 
-### Install dependencies
-pip install numpy yfinance scipy
+## 📐 The Math
 
-### Run the pricer
-python main.py
-
-## Sample Output
+### Geometric Brownian Motion (Monte Carlo)
 ```
-OptionSim — Risk & Pricing Report
-════════════════════════════════════════════
+S_T = S_0 × exp((r - 0.5σ²)T + σ√T × Z)
 
-Ticker        : MSFT
-Option Type   : CALL
-Stock Price   : $408.31
-Strike Price  : $440.00
-Volatility    : 26.65%
-
-PRICING
-────────────────────────────────────────────
-Monte Carlo Price   : $5.0327
-Black-Scholes Price : $5.1378
-Convergence         : STRONG — Models converge within 3%
-
-GREEKS
-────────────────────────────────────────────
-Delta (Δ) : 0.2423  → $0.24 per $1 stock move
-Theta (Θ) :-0.2155  → -$0.22 lost per day
-Vega  (ν) : 0.4400  → $0.44 per 1% vol change
-
-RISK & HEDGE
-────────────────────────────────────────────
-Delta Hedge : Short 24 shares per 100 contracts
-Time Risk   : Losing $0.22/day from decay
+Where:
+  S_0 = Current stock price
+  r   = Risk-free rate (5.25%)
+  σ   = Annualized volatility
+  T   = Time to expiry (years)
+  Z   ~ N(0,1) random shock
 ```
 
-## Key Concepts
-- **Monte Carlo Simulation** — Models 10,000 possible future price paths 
-  using Geometric Brownian Motion
-- **Black-Scholes** — Analytical benchmark to validate MC results
-- **Greeks** — Risk sensitivities calculated via numerical bumping
-- **Delta Hedging** — Number of shares needed to neutralise directional risk
+### Black-Scholes (Benchmark)
+```
+Call = S·N(d1) - K·e^(-rT)·N(d2)
+Put  = K·e^(-rT)·N(-d2) - S·N(-d1)
 
-## Author
-Tushar Bhatt — Built as a quantitative finance project
+d1 = [ln(S/K) + (r + 0.5σ²)T] / (σ√T)
+d2 = d1 - σ√T
+```
+
+### Value at Risk (95%, 1-day)
+```
+VaR = 5th percentile of rolling 60-day return window
+Violation = actual return < VaR threshold
+Basel Red Zone = >10 violations in 252 days
+```
+
+---
+
+## 📊 Sample Output (NVDA)
+
+```
+Current Price:     $183.04
+Strike (5% OTM):   $192.19
+Volatility:         42.30%
+
+Monte Carlo Price:  $7.4312
+Black-Scholes:      $7.3609
+Convergence:        99.0% ✅
+
+Delta:   0.4135  → gains $0.41 per $1 move
+Theta:  -0.1809  → loses $0.19 per day
+Vega:    0.2372  → gains $0.24 per 1% vol change
+
+VaR Backtest: 14 violations / 192 days
+Violation Rate: 7.3% (expected 5.0%)
+Basel Zone: 🔴 RED
+```
+
+---
+
+## 🔗 Related Project
+
+**[OptionSim](https://github.com/MaverickTushar007/OptionSim)** — The terminal-based pricing engine this dashboard is built on top of.
+
+---
+
+## 👤 Author
+
+**Tushar Bhatt**
+- GitHub: [@MaverickTushar007](https://github.com/MaverickTushar007)
+
+---
+
+## 📄 License
+
+MIT License — free to use, modify and distribute.
