@@ -22,6 +22,12 @@ def calculate_greeks(S, K, T, r, sigma, option_type="call"):
     price_down = black_scholes(S - bump_S, K, T, r, sigma, option_type)
     delta = (price_up - price_down) / (2 * bump_S)
 
+    # ── Gamma ─────────────────────────────────────────
+    # Second derivative of price w.r.t. stock price
+    # Central difference: (BS(S+1) - 2*BS(S) + BS(S-1)) / bump^2
+    price_mid  = black_scholes(S, K, T, r, sigma, option_type)
+    gamma = (price_up - 2 * price_mid + price_down) / (bump_S ** 2)
+
     # ── Theta ─────────────────────────────────────────
     # Bump time forward by 1 day, see price change
     bump_T  = 1 / 252
@@ -38,6 +44,7 @@ def calculate_greeks(S, K, T, r, sigma, option_type="call"):
 
     return {
         "delta" : round(delta, 4),
+        "gamma" : round(gamma, 4),
         "theta" : round(theta, 4),
         "vega"  : round(vega,  4)
     }

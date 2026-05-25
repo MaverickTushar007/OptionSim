@@ -21,18 +21,23 @@ def monte_carlo_price(S, K, T, r, sigma, option_type="call", simulations=10000):
     simulations = Number of price paths to simulate
     """
 
-    # Step 1 — Generate 10,000 random future price outcomes
-    # Each price path uses Geometric Brownian Motion (GBM)
-    Z = np.random.standard_normal(simulations)
-    ST = S * np.exp((r - 0.5 * sigma**2) * T + sigma * np.sqrt(T) * Z)
+    # Step 1 — Generate random shocks using antithetic variates
+    # Antithetic variates: pair each Z with -Z to reduce variance by ~40%
+    # Each "simulation" count produces one Z and one -Z path → halve draws
+    half = simulations // 2
+    Z = np.random.standard_normal(half)
+    Z_antithetic = np.concatenate([Z, -Z])   # paired: positive + negative shocks
 
-    # Step 2 — Calculate payoff for each simulation
+    # Step 2 — Simulate terminal prices under risk-neutral GBM
+    ST = S * np.exp((r - 0.5 * sigma**2) * T + sigma * np.sqrt(T) * Z_antithetic)
+
+    # Step 3 — Calculate payoff for each simulation
     if option_type == "call":
         payoffs = np.maximum(ST - K, 0)
     else:
         payoffs = np.maximum(K - ST, 0)
 
-    # Step 3 — Discount average payoff back to today
+    # Step 4 — Discount average payoff back to today
     price = np.exp(-r * T) * np.mean(payoffs)
 
     return round(price, 4)
