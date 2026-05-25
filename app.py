@@ -266,10 +266,14 @@ if run:
     with p2:
         card("Black-Scholes Price", f"${bs:.4f}", "Analytical benchmark", "blue")
     with p3:
-        convergence = 100 - diff
-        card("Model Convergence", f"{convergence:.1f}%",
-             "✅ Models agree" if diff < 3 else "⚠️ Diverging",
-             "green" if diff < 3 else "red")
+        abs_diff = abs(mc - bs)
+        rel_diff = abs_diff / bs * 100
+        card(
+            "MC vs BS Difference",
+            f"${abs_diff:.4f}",
+            f"{'✅' if rel_diff < 3 else '⚠️'} {rel_diff:.2f}% relative error",
+            "green" if rel_diff < 3 else "red"
+        )
 
     # ── Section 3 — Charts Row ────────────────────────
     st.markdown('<div class="section-header">📉 Analysis Charts</div>', unsafe_allow_html=True)
@@ -277,7 +281,7 @@ if run:
 
     # Chart 1 — Price Paths
     with col_left:
-        np.random.seed(42)
+        np.random.seed(None)   # vary paths each run — seed was hardcoded (42) before
         n_paths = 200
         Z = np.random.standard_normal((n_paths, days))
         paths = np.zeros((n_paths, days + 1))
@@ -387,8 +391,8 @@ if run:
         )
         st.plotly_chart(fig_payoff, use_container_width=True)
 
-    # Chart 3 — Volatility Smile
-    st.markdown('<div class="section-header">😊 Volatility Smile</div>', unsafe_allow_html=True)
+    # Chart 3 — Volatility Smile (illustrative/synthetic — not live market IV)
+    st.markdown('<div class="section-header">😊 Volatility Smile <span style="font-size:13px; color:#8892b0; font-weight:400">(Illustrative — parametric model, not live market IV)</span></div>', unsafe_allow_html=True)
 
     strikes = np.linspace(S * 0.80, S * 1.20, 50)
     base_vol = sigma
@@ -412,9 +416,9 @@ if run:
     # Smile curve
     fig_smile.add_trace(go.Scatter(
         x=strikes, y=smile_vol * 100,
-        mode='lines', name='Implied Vol',
+        mode='lines', name='Illustrative Vol (synthetic)',
         line=dict(color='#a78bfa', width=2.5),
-        hovertemplate='Strike: $%{x:.2f}<br>IV: %{y:.2f}%<extra></extra>'
+        hovertemplate='Strike: $%{x:.2f}<br>Vol: %{y:.2f}%<extra></extra>'
     ))
 
     # Current strike dot
@@ -433,10 +437,10 @@ if run:
     y_max = float(smile_vol.max() * 100) + 2
 
     fig_smile.update_layout(
-        title=dict(text=f"😊 {ticker} Volatility Smile — Implied Vol by Strike",
+        title=dict(text=f"😊 {ticker} Vol Smile — Illustrative (parametric, not market IV)",
                    font=dict(color='#ccd6f6', size=14)),
         xaxis_title="Strike Price ($)",
-        yaxis_title="Implied Volatility (%)",
+        yaxis_title="Illustrative Volatility (%)",
         yaxis=dict(range=[y_min, y_max], gridcolor='#1a1f2e'),
         height=350,
         paper_bgcolor='#0e1117',
@@ -494,7 +498,7 @@ if run:
             unsafe_allow_html=True
         )
         # ── Section 6 — VaR Backtest ──────────────────────
-    st.markdown('<div class="section-header">📊 VaR Backtest — Last 252 Trading Days</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">📊 VaR Backtest — 192 Effective Trading Days (60-day burn-in from 252)</div>', unsafe_allow_html=True)
 
     with st.spinner("Running backtest..."):
         import yfinance as yf
@@ -592,7 +596,7 @@ if run:
     # ── Basel Verdict ─────────────────────────────────
     b1, b2, b3, b4 = st.columns(4)
     with b1:
-        card("Total Days Tested", f"{total_days}", "252 trading days", "blue")
+        card("Total Days Tested", f"{total_days}", f"{total_days} effective days (252 − 60 burn-in)", "blue")
     with b2:
         card("VaR Violations", f"{violations}",
              f"Expected ~{int(total_days * 0.05)}",

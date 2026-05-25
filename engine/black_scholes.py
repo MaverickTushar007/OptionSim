@@ -23,6 +23,14 @@ def black_scholes(S, K, T, r, sigma, option_type="call"):
     sigma = Volatility (e.g. 0.42 for 42%)
     """
 
+    # Guard — expiry at T=0 causes divide-by-zero in d1/d2
+    # Return intrinsic value (no time value remains)
+    if T <= 0:
+        if option_type == "call":
+            return round(max(S - K, 0), 4)
+        else:
+            return round(max(K - S, 0), 4)
+
     # Step 1 — Calculate d1 and d2
     d1 = (np.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
